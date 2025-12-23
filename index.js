@@ -47,7 +47,7 @@ const client = new MongoClient(process.env.MONGODB_URI, {
 })
 async function run() {
   try {
-    // const db = client.db('ContestDB')
+    const db = client.db('ContestDB')
     const contestsCollection = db.collection('contests')
     const usersCollection = db.collection('users')
     const submissionsCollection = db.collection('submissions')
@@ -73,12 +73,20 @@ async function run() {
       res.send(result)
     })
     app.post('/submissions', async (req, res) => {
-      const contestData = req.body
-      // console.log(contestData)
-      const result = await submissionsCollection.insertOne(contestData)
+      const submitData = req.body
+      console.log(submitData)
+      const result = await submissionsCollection.insertOne(submitData)
       res.send(result)
     })
 
+    app.get('/submissions/:id', async (req, res) => {
+      const { id } = req.params;
+      // console.log(id)
+      const result = await submissionsCollection.findOne({ _id: new ObjectId(id) })
+      // console.log(result)
+      res.send(result)
+
+    })
     // Contest data in DB
     app.post('/contests', async (req, res) => {
       const contestData = req.body
