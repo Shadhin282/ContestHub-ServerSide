@@ -60,9 +60,9 @@ async function run() {
       res.send(result)
     })
     app.post('/users', async (req, res) => {
-      const contestData = req.body
+      const userData = req.body
       // console.log(contestData)
-      const result = await usersCollection.insertOne(contestData)
+      const result = await usersCollection.insertOne(userData)
       res.send(result)
     })
 
@@ -74,7 +74,7 @@ async function run() {
     })
     app.post('/submissions', async (req, res) => {
       const submitData = req.body
-      console.log(submitData)
+      // console.log(submitData)
       const result = await submissionsCollection.insertOne(submitData)
       res.send(result)
     })
@@ -209,7 +209,7 @@ async function run() {
 
 
     // Send a ping to confirm a successful connection
-    // await client.db('admin').command({ ping: 1 })
+    await client.db('admin').command({ ping: 1 })
     console.log(
       'Pinged your deployment. You successfully connected to MongoDB!'
     )
