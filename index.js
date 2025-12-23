@@ -62,7 +62,24 @@ async function run() {
     app.post('/users', async (req, res) => {
       const userData = req.body
       // console.log(contestData)
+      userData.created_at = new Date().toISOString();
+      userData.last_loggedIn = new Date().toISOString();
+      userData.role = 'user'
+      const query = {email: userData.email}
+
+      const alreadyExist = await usersCollection.findOne(query)
+
+      if (alreadyExist) {
+        const result = await usersCollection.updateOne(query,{
+           
+          $set: {
+            last_loggedIn: new Date().toISOString()
+          },
+        })
+        return res.send(result)
+      }
       const result = await usersCollection.insertOne(userData)
+
       res.send(result)
     })
 
