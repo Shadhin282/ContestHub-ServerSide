@@ -24,7 +24,7 @@ app.use(express.json())
 // jwt middlewares
 const verifyJWT = async (req, res, next) => {
   const token = req?.headers?.authorization?.split(' ')[1]
-  console.log(token)
+  console.log('token: ', token)
   if (!token) return res.status(401).send({ message: 'Unauthorized Access!' })
   try {
     const decoded = await admin.auth().verifyIdToken(token)
@@ -52,13 +52,28 @@ async function run() {
     const usersCollection = db.collection('users')
     const submissionsCollection = db.collection('submissions')
     const contestOrdersCollection = db.collection('contestOrders')
-
+    const createContestCollection = db.collection('createContest')
 
     // Users data in DB
     app.get('/users', async(req, res)=> {
       const result = await usersCollection.find().toArray()
       res.send(result)
     })
+
+    app.get('/users/role',verifyJWT, async (req, res) => {
+      
+      const result = await usersCollection.findOne({email: req.tokenEmail})
+      res.send({role: result?.role})
+    })
+
+    // app.patch('/adminUser', verifyJWT, async (req, res) => {
+    //   const {email,role} = req.body;
+      
+    //   const result = await usersCollection.updateOne({ email }, { $set: {role} })
+    //   res.send(result)
+    // })
+
+
     app.post('/users', async (req, res) => {
       const userData = req.body
       // console.log(contestData)
@@ -107,7 +122,7 @@ async function run() {
     // Contest data in DB
     app.post('/contests', async (req, res) => {
       const contestData = req.body
-      // console.log(contestData)
+      console.log(contestData)
       const result = await contestsCollection.insertOne(contestData)
       res.send(result)
     })
@@ -122,6 +137,59 @@ async function run() {
       const { id } = req.params;
       // console.log(id)
       const result = await contestsCollection.findOne({ _id: new ObjectId(id) })
+      // console.log(result)
+      res.send(result)
+
+    })
+
+    app.post('/create-contest', async (req, res) => {
+      const contestInfo = req.body;
+      const result = await createContestCollection.insertOne(contestInfo)
+      res.send(result)
+    })
+
+    app.get('/create-contest', async (req, res) => {
+      const result = await createContestCollection.find().toArray()
+      res.send(result)
+    })
+    app.get('/create-contest/:id', async (req, res) => {
+      const {id} = req.params
+      const result = await createContestCollection.findOne({_id: new ObjectId(id)})
+      res.send(result)
+    })
+    app.patch('/create-contest/:id', async (req, res) => {
+      const { id } = req.params
+      console.log(id)
+      const query = { _id: new ObjectId(id) }
+      
+      const contestInfo = req.body;
+      console.log(contestInfo)
+      const result = await createContestCollection.updateOne(query, {$set : {contestInfo}})
+      res.send(result)
+    })
+    app.patch('/create-contest-status/:id', async (req, res) => {
+      const { id } = req.params
+      console.log(id)
+      const query = { _id: new ObjectId(id) }
+      
+      const contestInfo = req.body;
+      console.log(contestInfo)
+      const result = await createContestCollection.updateOne(query, {$set : {status : contestInfo.status}})
+      res.send(result)
+    })
+
+    app.delete('/create-contest/:id', async (req, res) => {
+      const { id } = req.params
+      console.log(id)
+      const result = await createContestCollection.deleteOne({_id: new ObjectId(id)})
+      res.send(result)
+    })
+    
+     app.get('/mycontests',verifyJWT, async (req, res) => {
+      //  const {email} = req.params.email;
+      //  console.log(email)
+      // console.log(id)
+      const result = await contestsCollection.findOne({ creator_email: req.tokenEmail })
       // console.log(result)
       res.send(result)
 
@@ -212,7 +280,16 @@ async function run() {
       )
     })
 
+app.patch('/update-role', async (req, res) => {
+      const { email, role } = req.body
+      const result = await usersCollection.updateOne(
+        { email },
+        { $set: { role: role } }
+      )
+      console.log(result)
 
+      res.send(result)
+    })
 
 
 
